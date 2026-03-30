@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Para ti 💚</title>
+
+<style>
+body {
+    margin: 0;
+    overflow: hidden;
+    font-family: Arial, sans-serif;
+}
+
+/* BOTÓN */
+#btnFinal {
+    position: absolute;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    
+    padding: 12px 25px;
+    border-radius: 25px;
+    border: none;
+    
+    background: rgba(0,0,0,0.5);
+    color: white;
+    
+    font-size: 16px;
+    cursor: pointer;
+    
+    backdrop-filter: blur(10px);
+    transition: 0.3s;
+}
+
+#btnFinal:hover {
+    background: rgba(255,255,255,0.2);
+}
+</style>
+</head>
+
+<body>
+
+<audio id="music" loop>
+    <source src="feid.mp3" type="audio/mpeg">
+</audio>
+
+<button id="btnFinal">Haz clic aquí 💚</button>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/controls/OrbitControls.js"></script>
+
+<script>
+
+// 🎬 ESCENA
+let scene = new THREE.Scene();
+
+let camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
+camera.position.set(0, 2, 15);
+
+let renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setSize(window.innerWidth, window.innerHeight);
+document.body.appendChild(renderer.domElement);
+
+// 🎮 CONTROLES
+let controls = new THREE.OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+controls.enablePan = false;
+
+// 🌌 FONDO
+let loader = new THREE.TextureLoader();
+let bg = loader.load("fondo.jpg");
+bg.encoding = THREE.sRGBEncoding;
+scene.background = bg;
+
+// 💡 LUCES
+let ambient = new THREE.AmbientLight(0x404080, 0.6);
+scene.add(ambient);
+
+let moonLight = new THREE.DirectionalLight(0x6699ff, 0.7);
+moonLight.position.set(0, 5, 5);
+scene.add(moonLight);
+
+let magicLight = new THREE.PointLight(0xff66cc, 1, 20);
+magicLight.position.set(0, 2, 2);
+scene.add(magicLight);
+
+// 🌊 LAGO
+let waterGeo = new THREE.PlaneGeometry(50, 20);
+let waterMat = new THREE.MeshBasicMaterial({
+    color: 0x001e2b,
+    transparent: true,
+    opacity: 0.6
+});
+let water = new THREE.Mesh(waterGeo, waterMat);
+water.rotation.x = -Math.PI / 2;
+water.position.y = -4.5;
+scene.add(water);
+
+// 🌸 FLORES
+let flowerTex = loader.load("flor.png");
+let flowers = [];
+
+for(let i=0; i<12; i++){
+    let geo = new THREE.PlaneGeometry(1,1);
+    let mat = new THREE.MeshStandardMaterial({
+        map: flowerTex,
+        transparent: true,
+        emissive: new THREE.Color(0x220033),
+        emissiveIntensity: 0.5
+    });
+
+    let f = new THREE.Mesh(geo, mat);
+    f.rotation.x = -Math.PI/2;
+    f.position.set(Math.random()*8-4, -4.3, Math.random()*2);
+
+    scene.add(f);
+    flowers.push(f);
+}
+
+// ✨ LUCIÉRNAGAS
+let fireflies = [];
+
+for(let i=0; i<60; i++){
+    let geo = new THREE.SphereGeometry(0.03);
+    let mat = new THREE.MeshBasicMaterial({ color: 0xffcc66 });
+
+    let mesh = new THREE.Mesh(geo, mat);
+    let light = new THREE.PointLight(0xffaa66, 0.5, 3);
+
+    mesh.position.set(Math.random()*10-5, Math.random()*5, Math.random()*5);
+
+    scene.add(mesh);
+    scene.add(light);
+
+    fireflies.push({ mesh, light });
+}
+
+// ⭐ ESTRELLAS CONTROLADAS
+let puedeCrear = true;
+
+function crearEstrella(){
+    if(!puedeCrear) return;
+    puedeCrear = false;
+
+    let geo = new THREE.SphereGeometry(0.05);
+    let mat = new THREE.MeshBasicMaterial({ color: 0xffffff });
+    let star = new THREE.Mesh(geo, mat);
+
+    star.position.set(-8, Math.random()*4, -2);
+    scene.add(star);
+
+    function animar(){
+        star.position.x += 0.08;
+        star.position.y -= 0.03;
+
+        if(star.position.x < 8){
+            requestAnimationFrame(animar);
+        } else {
+            scene.remove(star);
+            setTimeout(()=>puedeCrear=true,1500);
+        }
+    }
+
+    animar();
+}
+
+setInterval(crearEstrella, 2000);
+
+// 💚 CORAZONES
+function crearCorazon(){
+    let heart = document.createElement("div");
+    heart.innerText = "💚";
+
+    heart.style.position = "absolute";
+    heart.style.left = Math.random()*100 + "vw";
+    heart.style.bottom = "-50px";
+    heart.style.fontSize = (20 + Math.random()*20)+"px";
+
+    document.body.appendChild(heart);
+
+    let pos = -50;
+
+    function subir(){
+        pos += 0.5;
+        heart.style.bottom = pos + "px";
+
+        if(pos < window.innerHeight){
+            requestAnimationFrame(subir);
+        } else {
+            heart.remove();
+        }
+    }
+
+    subir();
+}
+
+setInterval(crearCorazon, 1500);
+
+// 💬 FRASES
+let frases = [
+    "Perdón por lo que hice...",
+    "No dejo de pensar en ti 💚",
+    "Me haces falta...",
+    "Quiero hacerlo mejor..."
+];
+
+function crearFrase(){
+    let div = document.createElement("div");
+    div.innerText = frases[Math.floor(Math.random()*frases.length)];
+
+    div.style.position = "absolute";
+    div.style.bottom = "0px";
+    div.style.left = Math.random()*80 + "%";
+    div.style.color = "white";
+
+    document.body.appendChild(div);
+
+    let pos = 0;
+
+    function subir(){
+        pos += 0.3;
+        div.style.bottom = pos + "px";
+
+        if(pos < window.innerHeight){
+            requestAnimationFrame(subir);
+        } else {
+            div.remove();
+        }
+    }
+
+    subir();
+}
+
+setInterval(crearFrase, 4000);
+
+// 🎬 ANIMACIÓN ENTRADA
+let start = Date.now();
+
+function entrada(){
+    let t = (Date.now() - start) / 3000;
+    let ease = 1 - Math.pow(1 - Math.min(t,1), 3);
+
+    camera.position.z = 15 - (10 * ease);
+    camera.position.y = 2 - (1 * ease);
+
+    if(t < 1){
+        requestAnimationFrame(entrada);
+    }
+}
+
+entrada();
+
+// 🔘 BOTÓN
+document.getElementById("btnFinal").onclick = () => {
+    let div = document.createElement("div");
+
+    div.innerText = "Solo quería que vieras esto... 💚";
+
+    div.style.position = "absolute";
+    div.style.top = "50%";
+    div.style.left = "50%";
+    div.style.transform = "translate(-50%, -50%)";
+    div.style.color = "white";
+    div.style.fontSize = "30px";
+
+    document.body.appendChild(div);
+
+    document.getElementById("music").play();
+};
+
+// 🔄 ANIMACIÓN GENERAL
+function animate(){
+    requestAnimationFrame(animate);
+
+    controls.update();
+
+    flowers.forEach((f,i)=>{
+        f.rotation.z += 0.01;
+        f.position.y += Math.sin(Date.now()*0.001+i)*0.001;
+    });
+
+    fireflies.forEach((f,i)=>{
+        let t = Date.now()*0.001+i;
+        let intensity = Math.abs(Math.sin(t*2));
+
+        f.mesh.material.opacity = intensity;
+        f.light.intensity = intensity;
+    });
+
+    renderer.render(scene, camera);
+}
+
+animate();
+
+</script>
+
+</body>
+</html>
